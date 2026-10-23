@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.18.x]
+        node-version: [20.18.x, 24.x]
 
     steps:
       - name: Checkout repository
@@ -26,7 +26,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build
-        run: NODE_OPTIONS="--experimental-specifier-resolution=node" npm run build
+      - name: Test and build
+        run: npm run verify

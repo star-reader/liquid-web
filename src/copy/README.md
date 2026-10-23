@@ -1,3 +1,34 @@
+> **Maintained fork:** This repository is based on [koirodev/liquid-web](https://github.com/koirodev/liquid-web). Version 1.1.2 fixes host animation API mutation, event-listener cleanup, and pending updates after destruction. Glass shaders, SVG filters, visual parameters, and framework entry points are preserved. Original authorship and MIT license notices are retained.
+>
+> The fork is currently distributed as a **local npm archive**, not a published npm release.
+
+## Local fork usage
+
+```bash
+npm ci
+npm run pack:local
+```
+
+This runs the source tests, builds and tests all distribution bundles, then writes `release/star-reader-liquid-web-1.1.2.tgz`.
+
+Copy the archive into the consuming project's `vendor/` directory and set its dependency to:
+
+```json
+{
+  "dependencies": {
+    "liquid-web": "file:vendor/star-reader-liquid-web-1.1.2.tgz"
+  }
+}
+```
+
+Run `npm install` and commit the archive plus both dependency manifests. Existing imports such as `import { LiquidWeb } from 'liquid-web/react'` remain valid. The upstream usage documentation follows below; its npm/CDN examples refer to the original package.
+
+## Development checks
+
+- `npm test`: source lifecycle, animation scheduling, listener cleanup, and unchanged SVG/effect output.
+- `npm run test:dist`: built ESM, normal/minified browser bundles, and framework/type entry points (run the build first).
+- `npm run verify`: all of the above, including the production build.
+
 <div style="width: 100%; display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
   <a href="https://github.com/koirodev/liquid-web/actions/workflows/build.yml">
     <img src="https://github.com/koirodev/liquid-web/workflows/Build/badge.svg" alt="Build">

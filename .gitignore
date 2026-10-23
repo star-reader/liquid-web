@@ -22,3 +22,6 @@ demo-react
 .env
 .env.*
 !.env.example
+
+# Local package archives
+release/

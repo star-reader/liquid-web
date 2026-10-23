@@ -12,6 +12,7 @@ import { DOMManager } from './managers/DOMManager.mjs';
 
 // utils
 import { deepMerge } from '../utils/deepMerge.mjs';
+import { createAnimationFrameScheduler } from '../utils/animationFrame.mjs';
 import {
   ShaderDisplacementGenerator,
   fragmentShaders,
@@ -40,11 +41,6 @@ class LiquidWeb {
 
   constructor(...args) {
     let el, options;
-
-    // Fix for requestAnimationFrame in old browsers
-    window.requestAnimationFrame = function (callback) {
-      return setTimeout(callback, 0);
-    };
 
     // Анализ аргументов конструктора
     if (
@@ -138,6 +134,12 @@ class LiquidWeb {
 
     this.destroyed = false;
     this.initialized = false;
+    this._eventListeners = [];
+    this._pendingUpdates = new Set();
+    this._updateGeneration = 0;
+    this._animationFrame = createAnimationFrameScheduler(
+      this.$el?.ownerDocument?.defaultView || window
+    );
 
     this.DOMManager = new DOMManager();
 
@@ -203,6 +205,7 @@ class LiquidWeb {
       // Обновляем запись в instances
       if (this.$el) {
         LiquidWeb.__instances__.set(this.$el, this);
+        this.$el.liquidweb = this;
       }
 
       this.update();
@@ -430,17 +433,33 @@ class LiquidWeb {
   }
 
   attachEventListeners() {
-    if (!this.$el) return;
+    if (!this.$el || this._eventListeners.length) return;
 
-    this.$el.addEventListener('mouseenter', (e) => this.handleMouseEnter(e));
-    this.$el.addEventListener('mouseleave', (e) => this.handleMouseLeave(e));
-    this.$el.addEventListener('mousedown', (e) => this.handleMouseDown(e));
-    this.$el.addEventListener('mouseup', (e) => this.handleMouseUp(e));
-    this.$el.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-    this.$el.addEventListener('click', (e) => this.handleClick(e));
-    window.addEventListener('resize', () => this.handleResize());
+    const targetWindow = this.$el.ownerDocument?.defaultView || window;
+    const bindings = [
+      [this.$el, 'mouseenter', 'handleMouseEnter'],
+      [this.$el, 'mouseleave', 'handleMouseLeave'],
+      [this.$el, 'mousedown', 'handleMouseDown'],
+      [this.$el, 'mouseup', 'handleMouseUp'],
+      [this.$el, 'mousemove', 'handleMouseMove'],
+      [this.$el, 'click', 'handleClick'],
+      [targetWindow, 'resize', 'handleResize'],
+    ];
+
+    for (const [target, type, method] of bindings) {
+      const listener = (event) => this[method](event);
+      target.addEventListener(type, listener);
+      this._eventListeners.push({ target, type, listener });
+    }
 
     this.setupMutationObserver();
+  }
+
+  detachEventListeners() {
+    for (const { target, type, listener } of this._eventListeners) {
+      target.removeEventListener(type, listener);
+    }
+    this._eventListeners = [];
   }
 
   /**
@@ -517,7 +536,9 @@ class LiquidWeb {
   }
 
   update() {
+    if (this.destroyed) return;
     this.emit('beforeUpdate');
+    if (this.destroyed) return;
 
     if (!this.$el) {
       throw new LiquidWebError('Container element not found');
@@ -532,12 +553,19 @@ class LiquidWeb {
 
     this.emit('update', this);
 
-    window.requestAnimationFrame(() => {
+    if (this.destroyed) return;
+    const generation = this._updateGeneration;
+    const frameId = this._animationFrame.request(() => {
+      this._pendingUpdates.delete(frameId);
+      // Ignore stale work even if a scheduler delivers it after cancellation
+      // or this instance has already been initialized again.
+      if (this.destroyed || generation !== this._updateGeneration) return;
       this.updateBackdropBorderRadius();
       this.updateEffects();
 
       this.emit('afterUpdate', this);
     });
+    this._pendingUpdates.add(frameId);
   }
 
   updateEffects() {

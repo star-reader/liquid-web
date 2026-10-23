@@ -6,20 +6,22 @@ export default {
 
     this.emit('beforeDestroy');
 
-    // Удаляем слушатели событий
-    this.$el.removeEventListener('mouseenter', this.handleMouseEnter);
-    this.$el.removeEventListener('mouseleave', this.handleMouseLeave);
-    this.$el.removeEventListener('mousedown', this.handleMouseDown);
-    this.$el.removeEventListener('mouseup', this.handleMouseUp);
-    this.$el.removeEventListener('click', this.handleClick);
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    window.removeEventListener('resize', this.handleResize);
+    this.destroyed = true;
+    this._updateGeneration += 1;
+    for (const frameId of this._pendingUpdates) {
+      this._animationFrame.cancel(frameId);
+    }
+    this._pendingUpdates.clear();
+    this.detachEventListeners();
 
     this.$svg?.remove();
     this.$svg = null;
     this.$backdrop?.remove();
     this.$backdrop = null;
-    this.$el?.appendChild?.(this.$content);
+    if (this.$content) {
+      if (this.$content.liquidweb === this) delete this.$content.liquidweb;
+      this.$el?.appendChild?.(this.$content);
+    }
     this.$el?.querySelector('.liquidweb__content')?.remove();
     this.$el?.classList.remove('liquidweb');
     this.$el?.classList.remove('liquidweb-initialized');

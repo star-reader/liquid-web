@@ -1,15 +1,19 @@
 {
-  "name": "liquid-web-src",
-  "version": "1.1.1",
+  "name": "@star-reader/liquid-web",
+  "version": "1.1.2",
   "description": "Modern JavaScript library for easy creation of liquid glass effect for Vue, React, VanillaJS",
   "main": "index.js",
   "scripts": {
-    "build": "npx gulp",
-    "dev": "npx gulp dev"
+    "build": "gulp",
+    "dev": "gulp dev",
+    "test": "node --test tests/core.test.mjs",
+    "test:dist": "node --test tests/dist.test.mjs",
+    "verify": "npm test && npm run build && npm run test:dist",
+    "pack:local": "npm run verify && node scripts/pack-local.mjs"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/koirodev/liquid-web.git"
+    "url": "git+https://github.com/star-reader/liquid-web.git"
   },
   "keywords": [
     "liquid glass",
@@ -25,9 +29,9 @@
   "author": "Vitaly Koiro",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/koirodev/liquid-web/issues"
+    "url": "https://github.com/star-reader/liquid-web/issues"
   },
-  "homepage": "https://liquid.prismify.in",
+  "homepage": "https://github.com/star-reader/liquid-web#readme",
   "devDependencies": {
     "@csstools/postcss-is-pseudo-class": "^5.0.1",
     "autoprefixer": "^10.4.20",
@@ -43,5 +47,6 @@
     "gulp-watch": "^5.0.1",
     "jsdom": "^25.0.1",
     "npm": "^10.9.0"
-  }
+  },
+  "private": true
 }

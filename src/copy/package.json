@@ -1,5 +1,5 @@
 {
-  "name": "liquid-web",
+  "name": "@packageName",
   "version": "@version",
   "description": "@description",
   "type": "module",
@@ -35,14 +35,14 @@
 
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/koirodev/liquid-web.git"
+    "url": "@repositoryURL"
   },
   
   "keywords": @keywords,
   "author": "@author",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/koirodev/liquid-web/issues"
+    "url": "@issuesURL"
   },
   "homepage": "@homepage"
 }

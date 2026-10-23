@@ -23,6 +23,9 @@ export default function (gulp, config) {
           ).replace(/\n\]$/, '\n  ]');
 
           content = content
+            .replace(/@packageName/g, packageJson.name)
+            .replace(/@repositoryURL/g, packageJson.repository.url)
+            .replace(/@issuesURL/g, packageJson.bugs.url)
             .replace(/@version/g, packageJson.version)
             .replace(/@description/g, packageJson.description)
             .replace(/@keywords/g, keywords)
